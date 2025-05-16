@@ -153,6 +153,7 @@ class GaussianDiffusion:
 
 
         # gamma atribute
+        self.timesteps_prev = len(self.betas) - 1
         self.theta_0 = 0.001
         self.kappas = (self.betas / self.alphas_cumprod / self.theta_0 ** 2)
         self.thetas = (self.theta_0 * self.sqrt_alphas_cumprod)
@@ -211,10 +212,10 @@ class GaussianDiffusion:
         :return: A noisy version of x_start.
         """
         if noise is None:
-            noise = th.randn_like(x_start)
+            # noise = th.randn_like(x_start)
             kappas_cumsum_t = _extract_into_tensor(self.kappas_cumsum, t, x_start.shape)
             thetas_t = _extract_into_tensor(self.thetas, t, x_start.shape)
-            noise = Gamma(kappas_cumsum_t.squeeze(), (1 / thetas_t).squeeze()).sample(x_start.shape)
+            noise = Gamma(kappas_cumsum_t.squeeze(), (1 / thetas_t).squeeze()).sample(x_start.shape[1:])
         assert noise.shape == x_start.shape
         return (
             _extract_into_tensor(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start
@@ -360,10 +361,13 @@ class GaussianDiffusion:
         )
 
     def _predict_eps_from_xstart(self, x_t, t, pred_xstart):
+        # return (
+        #     _extract_into_tensor(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t
+        #     - pred_xstart
+        # ) / _extract_into_tensor(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape)
         return (
-            _extract_into_tensor(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t
-            - pred_xstart
-        ) / _extract_into_tensor(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape)
+            x_t - _extract_into_tensor(self.sqrt_alphas_cumprod, t, x_t.shape) * pred_xstart
+        )
 
     def _scale_timesteps(self, t):
         if self.rescale_timesteps:
@@ -472,9 +476,9 @@ class GaussianDiffusion:
             img = noise
         else:
             # img = th.randn(*shape, device=device)
-            kappas_sumsum_T = self.kappas_cumsum[-1]
-            thetas_T = self.thetas[-1]
-            img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape).float() - kappas_sumsum_T * thetas_T
+            kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full(shape[0],self.timesteps_prev), shape)
+            thetas_T = _extract_into_tensor(self.thetas, th.full(shape[0],self.timesteps_prev), shape)
+            img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape) - kappas_sumsum_T * thetas_T
 
 
         indices = list(range(self.num_timesteps))[::-1]
@@ -638,7 +642,11 @@ class GaussianDiffusion:
         if noise is not None:
             img = noise
         else:
-            img = th.randn(*shape, device=device)
+            # img = th.randn(*shape, device=device)
+            kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full(shape[0],self.timesteps_prev), shape)
+            thetas_T = _extract_into_tensor(self.thetas, th.full(shape[0],self.timesteps_prev), shape)
+            img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape) - kappas_sumsum_T * thetas_T
+
         indices = list(range(self.num_timesteps))[::-1]
 
         if progress:
@@ -713,7 +721,11 @@ class GaussianDiffusion:
         if model_kwargs is None:
             model_kwargs = {}
         if noise is None:
-            noise = th.randn_like(x_start)
+            # noise = th.randn_like(x_start)
+            kappas_cumsum_t = _extract_into_tensor(self.kappas_cumsum, t, x_start.shape)
+            thetas_t = _extract_into_tensor(self.thetas, t, x_start.shape)
+            noise = Gamma(kappas_cumsum_t.squeeze(), (1 / thetas_t).squeeze()).sample(x_start.shape[1:])
+
         x_t = self.q_sample(x_start, t, noise=noise)
 
         terms = {}
