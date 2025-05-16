@@ -5,6 +5,7 @@ numpy array. This can be used to produce samples for FID evaluation.
 
 import argparse
 import os
+from email.policy import strict
 
 import numpy as np
 import torch as th
@@ -31,7 +32,7 @@ def main():
         **args_to_dict(args, model_and_diffusion_defaults().keys())
     )
     model.load_state_dict(
-        dist_util.load_state_dict(args.model_path, map_location="cpu")
+        dist_util.load_state_dict(args.model_path, map_location="cpu",strict=False)
     )
     model.to(dist_util.dev())
     model.eval()
