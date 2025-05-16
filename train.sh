@@ -1,2 +1,1 @@
-python scripts/image_train.py --data_dir datasets/cifar_train --image_size 32 --num_channels 128 --num_res_blocks 3 --learn_sigma True --dropout 0.3 --save_interval 100
-
+python scripts/image_train.py --data_dir datasets/cifar_train --image_size 32 --num_channels 128 --num_res_blocks 3 --learn_sigma True --dropout 0.3 --diffusion_steps 4000 --noise_schedule cosine --lr 1e-4 --batch_size 128 --save_interval 100

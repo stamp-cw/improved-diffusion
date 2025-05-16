@@ -213,9 +213,9 @@ class GaussianDiffusion:
         """
         if noise is None:
             # noise = th.randn_like(x_start)
-            kappas_cumsum_t = _extract_into_tensor(self.kappas_cumsum, t, x_start.shape)
-            thetas_t = _extract_into_tensor(self.thetas, t, x_start.shape)
-            noise = Gamma(kappas_cumsum_t.squeeze(), (1 / thetas_t).squeeze()).sample(x_start.shape[1:])
+            kappas_cumsum_t = _extract_into_tensor(self.kappas_cumsum, t, (x_start.shape[0],))
+            thetas_t = _extract_into_tensor(self.thetas, t, (x_start.shape[0],))
+            noise = Gamma(kappas_cumsum_t.squeeze(), (1 / thetas_t).squeeze()).sample(x_start.shape[1:]).permute([-1, 0, 1, 2]).to(device=t.device)
         assert noise.shape == x_start.shape
         return (
             _extract_into_tensor(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start
@@ -476,9 +476,14 @@ class GaussianDiffusion:
             img = noise
         else:
             # img = th.randn(*shape, device=device)
-            kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full(shape[0],self.timesteps_prev), shape)
-            thetas_T = _extract_into_tensor(self.thetas, th.full(shape[0],self.timesteps_prev), shape)
-            img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape) - kappas_sumsum_T * thetas_T
+            kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full((shape[0],),self.timesteps_prev,device=device), (shape[0],))
+            _kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full((shape[0],),self.timesteps_prev,device=device), shape)
+
+            thetas_T = _extract_into_tensor(self.thetas, th.full((shape[0],),self.timesteps_prev,device=device), (shape[0],))
+            _thetas_T = _extract_into_tensor(self.thetas, th.full((shape[0],),self.timesteps_prev,device=device), shape)
+            # img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape[1:]).permute([-1, 0, 1, 2]) - kappas_sumsum_T * thetas_T
+            img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape[1:]).permute([-1, 0, 1, 2]).to(device=device) - _kappas_sumsum_T * _thetas_T
+
 
 
         indices = list(range(self.num_timesteps))[::-1]
@@ -643,9 +648,11 @@ class GaussianDiffusion:
             img = noise
         else:
             # img = th.randn(*shape, device=device)
-            kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full(shape[0],self.timesteps_prev), shape)
-            thetas_T = _extract_into_tensor(self.thetas, th.full(shape[0],self.timesteps_prev), shape)
-            img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape) - kappas_sumsum_T * thetas_T
+            kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full((shape[0],),self.timesteps_prev,device=device), (shape[0],))
+            _kappas_sumsum_T = _extract_into_tensor(self.kappas_cumsum, th.full((shape[0],),self.timesteps_prev,device=device), shape)
+            thetas_T = _extract_into_tensor(self.thetas, th.full((shape[0],),self.timesteps_prev,device=device), (shape[0],))
+            _thetas_T = _extract_into_tensor(self.thetas, th.full((shape[0],),self.timesteps_prev,device=device), shape)
+            img = Gamma(kappas_sumsum_T, (1 / thetas_T)).sample(shape[1:]).permute([-1, 0, 1, 2]).to(device=device) - _kappas_sumsum_T * _thetas_T
 
         indices = list(range(self.num_timesteps))[::-1]
 
@@ -722,10 +729,11 @@ class GaussianDiffusion:
             model_kwargs = {}
         if noise is None:
             # noise = th.randn_like(x_start)
-            kappas_cumsum_t = _extract_into_tensor(self.kappas_cumsum, t, x_start.shape)
-            thetas_t = _extract_into_tensor(self.thetas, t, x_start.shape)
-            noise = Gamma(kappas_cumsum_t.squeeze(), (1 / thetas_t).squeeze()).sample(x_start.shape[1:])
-
+            kappas_cumsum_t = _extract_into_tensor(self.kappas_cumsum, t, (x_start.shape[0],))
+            _kappas_cumsum_t = _extract_into_tensor(self.kappas_cumsum, t, x_start.shape)
+            thetas_t = _extract_into_tensor(self.thetas, t, (x_start.shape[0],))
+            _thetas_t = _extract_into_tensor(self.thetas, t, x_start.shape)
+            noise = Gamma(kappas_cumsum_t.squeeze(), (1 / thetas_t).squeeze()).sample(x_start.shape[1:]).permute([-1, 0, 1, 2]).to(device=t.device) - _kappas_cumsum_t * _thetas_t
         x_t = self.q_sample(x_start, t, noise=noise)
 
         terms = {}
