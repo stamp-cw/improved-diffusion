@@ -1,1 +1,1 @@
-python scripts/image_sample.py --model_path $0 --image_size 32 --num_channels 128 --num_res_blocks 3 --learn_sigma True --dropout 0.3 --diffusion_steps 4000 --noise_schedule cosine --lr 1e-4 --batch_size 128 --num_samples 16
+python scripts/image_sample.py --model_path $0 --image_size 32 --num_channels 128 --num_res_blocks 3 --learn_sigma True --dropout 0.3 --diffusion_steps 4000 --noise_schedule cosine --batch_size 128 --num_samples 16
