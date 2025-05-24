@@ -246,8 +246,8 @@ class GaussianDiffusion:
             # noise = th.randn_like(x_start)
 
             r_bar_t = _extract_into_tensor(self.r_bar, t, (x_start.shape[0],))
-            e_n_t = _extract_into_tensor(self.e_n, t, (x_start.shape[0],))
-            std_n_t = _extract_into_tensor(self.std_n, t, (x_start.shape[0],))
+            e_n_t = _extract_into_tensor(self.e_n, t, x_start.shape)
+            std_n_t = _extract_into_tensor(self.std_n, t, x_start.shape)
             noise = th.distributions.Poisson(r_bar_t.squeeze()).sample(x_start.shape[1:]).permute([-1, 0, 1, 2]).to(device=t.device)
             noise = (noise - e_n_t) / std_n_t
 
@@ -258,8 +258,8 @@ class GaussianDiffusion:
         #    + _extract_into_tensor(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape)
         #    * noise
         #)
-        coef1 = _extract_into_tensor(self.forward_noise_coef1, t, (x_start.shape[0],))
-        coef2 = _extract_into_tensor(self.forward_noise_coef2, t, (x_start.shape[0],))
+        coef1 = _extract_into_tensor(self.forward_noise_coef1, t, x_start.shape)
+        coef2 = _extract_into_tensor(self.forward_noise_coef2, t, x_start.shape)
         return (
                 coef1 * x_start + coef2 * noise
         )
@@ -386,8 +386,8 @@ class GaussianDiffusion:
 
     def _predict_xstart_from_eps(self, x_t, t, eps):
         assert x_t.shape == eps.shape
-        coef1 = _extract_into_tensor(self.predict_start_from_noise_coef1, t, ( x_t.shape[0],))
-        coef2 = _extract_into_tensor(self.predict_start_from_noise_coef2, t, ( x_t.shape[0],))
+        coef1 = _extract_into_tensor(self.predict_start_from_noise_coef1, t, x_t.shape)
+        coef2 = _extract_into_tensor(self.predict_start_from_noise_coef2, t, x_t.shape)
         return (
             # _extract_into_tensor(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t
             # - _extract_into_tensor(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape) * eps
@@ -409,8 +409,8 @@ class GaussianDiffusion:
         #    _extract_into_tensor(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t
         #    - pred_xstart
         #) / _extract_into_tensor(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape)
-        coef1 = _extract_into_tensor(self.predict_start_from_noise_coef1, t, ( x_t.shape[0],))
-        coef2 = _extract_into_tensor(self.predict_start_from_noise_coef2, t, ( x_t.shape[0],))
+        coef1 = _extract_into_tensor(self.predict_start_from_noise_coef1, t, x_t.shape)
+        coef2 = _extract_into_tensor(self.predict_start_from_noise_coef2, t, x_t.shape)
         return (
             (coef1 * x_t - pred_xstart) / coef2
         )
@@ -760,8 +760,8 @@ class GaussianDiffusion:
             # noise = th.randn_like(x_start)
 
             r_bar_t = _extract_into_tensor(self.r_bar, t, (x_start.shape[0],))
-            e_n_t = _extract_into_tensor(self.e_n, t, (x_start.shape[0],))
-            std_n_t = _extract_into_tensor(self.std_n, t, (x_start.shape[0],))
+            e_n_t = _extract_into_tensor(self.e_n, t, x_start.shape)
+            std_n_t = _extract_into_tensor(self.std_n, t, x_start.shape)
             noise = th.distributions.Poisson(r_bar_t.squeeze()).sample(x_start.shape[1:]).permute([-1, 0, 1, 2]).to(device=t.device)
             noise = (noise - e_n_t) / std_n_t
 
