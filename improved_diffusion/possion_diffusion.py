@@ -136,9 +136,6 @@ class GaussianDiffusion:
         self.d_n = self.r * self.t
         self.std_n = np.sqrt(self.d_n)
 
-
-
-
         self.model_mean_type = model_mean_type
         self.model_var_type = model_var_type
         self.loss_type = loss_type
@@ -162,6 +159,9 @@ class GaussianDiffusion:
         # possion
         # alpha
 
+        # 信息为主
+        # self.p_alhpa = self.t * self.alphas_cumprod
+        # 噪声为主
         self.p_alhpa = 1.0 - self.alphas_cumprod
         self.sqrt_p_alpha = np.sqrt(self.p_alhpa)
         self.p_alpha_zero = 0.
