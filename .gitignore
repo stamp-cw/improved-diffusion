@@ -2,4 +2,4 @@
 __pycache__/
 /samples/*
 /datasets/*
-
+!/datasets/cifar10_dog.py

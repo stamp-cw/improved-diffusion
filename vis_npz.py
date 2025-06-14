@@ -114,7 +114,7 @@ def visualize_npz(npz_path, output_path=None, num_samples=16, expected_channels=
 if __name__ == "__main__":
     # 示例用法 - 修改为更简单的输出路径
     # npz_file = r"D:\Project\improved-diffusion\samples\samples_64x32x32x3.npz"
-    npz_file = r"D:\Project\improved-diffusion\samples\samples_64x32x32x3 (1).npz"
+    npz_file = r"D:\Project\improved-diffusion\samples\gamma_model35000_samples_256x32x32x3.npz"
     try:
         result_img = visualize_npz(
             npz_file,
